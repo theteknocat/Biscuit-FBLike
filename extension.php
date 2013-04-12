@@ -3,10 +3,11 @@
  * Extension for rendering a Facebook "like" button on any page of your site. Supports globals you can define in system settings for customizing the button.
  *
  * @package Extensions
+ * @subpackage FbLike
  * @author Peter Epp
  * @copyright Copyright (c) 2009 Peter Epp (http://teknocat.org)
  * @license GNU Lesser General Public License (http://www.gnu.org/licenses/lgpl.html)
- * @version 1.0
+ * @version 1.0 $Id: extension.php 13982 2011-08-08 18:51:55Z teknocat $
  */
 class FbLike extends AbstractExtension {
 	/**

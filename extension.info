@@ -1,0 +1,4 @@
+name = "FbLike"
+description = "Renders a Facebook like button and provides configuration settings that can be edited via the System Admin module."
+version = "2.2"
+is_global = 1
