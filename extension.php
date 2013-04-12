@@ -20,7 +20,7 @@ class FbLike extends AbstractExtension {
 	 *
 	 * @var string 'true' or 'false'
 	 */
-	private $_show_faces = 'true';
+	private $_show_faces = 'false';
 	/**
 	 * Width of the widget iframe
 	 *
@@ -114,7 +114,7 @@ class FbLike extends AbstractExtension {
 				$font = '='.rawurlencode(urlencode($this->_font));
 			}
 			$url = rawurlencode($this->_url);
-			return '<iframe src="http://www.facebook.com/plugins/like.php?href='.$url.'&amp;layout='.$this->_layout.'&amp;show_faces='.$this->_show_faces.'&amp;width='.$this->_width.'&amp;action='.$this->_verb.'&amp;font'.$font.'&amp;colorscheme='.$this->_colorscheme.'&amp;height='.$this->_iframe_height.'" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:'.$this->_width.'px; height:80px;" allowTransparency="true"></iframe>';
+			return '<iframe src="http://www.facebook.com/plugins/like.php?href='.$url.'&amp;layout='.$this->_layout.'&amp;show_faces='.$this->_show_faces.'&amp;width='.$this->_width.'&amp;action='.$this->_verb.'&amp;font'.$font.'&amp;colorscheme='.$this->_colorscheme.'&amp;height='.$this->_iframe_height.'" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:'.$this->_width.'px; height:'.$this->_iframe_height.'px;" allowTransparency="true"></iframe>';
 		}
 		return '';
 	}
@@ -125,17 +125,23 @@ class FbLike extends AbstractExtension {
 	 * @author Peter Epp
 	 */
 	private function set_options() {
-		if (defined('FB_LIKE_LAYOUT') && (FB_LIKE_LAYOUT == 'standard' || FB_LIKE_LAYOUT == 'button_count')) {
+		if (defined('FB_LIKE_LAYOUT') && (FB_LIKE_LAYOUT == 'standard' || FB_LIKE_LAYOUT == 'button_count' || FB_LIKE_LAYOUT == 'box_count')) {
 			$this->_layout = FB_LIKE_LAYOUT;
 		}
 		if (defined('FB_LIKE_SHOW_FACES') && (FB_LIKE_SHOW_FACES == 'true' || FB_LIKE_SHOW_FACES == 'false')) {
 			$this->_show_faces = FB_LIKE_SHOW_FACES;
 			if ($this->_show_faces == 'false') {
-				$this->_iframe_height = 35;
+				if ($this->_layout == 'box_count') {
+					$this->_iframe_height = 60;
+				} else {
+					$this->_iframe_height = 35;
+				}
 			}
 		}
-		if (defined('FB_LIKE_WIDTH')) {
-			$this->_width = FB_LIKE_WIDTH;
+		if (defined('FB_LIKE_WIDTH') && (int)FB_LIKE_WIDTH > 0) {
+			$this->_width = (int)FB_LIKE_WIDTH;
+		} else if ($this->_layout == 'box_count') {
+			$this->_width = 50;
 		}
 		if (defined('FB_LIKE_VERB') && (FB_LIKE_VERB == 'like' || FB_LIKE_VERB == 'recommend')) {
 			$this->_verb = FB_LIKE_VERB;
@@ -147,6 +153,19 @@ class FbLike extends AbstractExtension {
 		if (defined('FB_LIKE_COLORSCHEME') && (FB_LIKE_COLORSCHEME == 'light' || FB_LIKE_COLORSCHEME == 'dark')) {
 			$this->_colorscheme = FB_LIKE_COLORSCHEME;
 		}
+	}
+	public static function install_migration() {
+		$query = "REPLACE INTO `system_settings` (`constant_name`, `friendly_name`, `description`, `value`, `value_type`, `required`, `group_name`) VALUES
+		('FB_LIKE_WIDTH', 'Button Width (pixels)', 'Make sure it has room for the text beside it. Defaults to 450 if left blank.', '', NULL, 0, 'Facebook Like Button'),
+		('FB_LIKE_LAYOUT', 'Layout', 'Standard shows &ldquo;xxx people like this. Be the first of your friends&rdquo; or &ldquo;[User&rsquo;s Name] and xxx others like this.&rdquo; if the user is logged into Facebook. Button count shows only the number of likes.', 'standard', 'select{standard|button_count|box_count}', 1, 'Facebook Like Button'),
+		('FB_LIKE_SHOW_FACES', 'Show Faces', 'Shows the faces of friends who like the page for the user who is currently viewing the site if they are also logged into Facebook in another window or tab', 'false', 'select{true|false}', 1, 'Facebook Like Button'),
+		('FB_LIKE_VERB','Button Label', 'Label that shows on the like button', 'like', 'select{like|recommend}', 1, 'Facebook Like Button'),
+		('FB_LIKE_FONT','Font','','lucida grande','select{arial|lucida grande|segoe ui|tahoma|trebuchet ms|verdana}', 1, 'Facebook Like Button'),
+		('FB_LIKE_COLORSCHEME','Colour Scheme','','light','select{light|dark}', 1, 'Facebook Like Button')";
+		DB::query($query);
+	}
+	public static function uninstall_migration() {
+		DB::query("DELETE FROM `system_settings` WHERE `constant_name` LIKE 'FB_LIKE_%'");
 	}
 }
 ?>
